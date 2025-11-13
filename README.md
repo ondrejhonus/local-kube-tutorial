@@ -75,5 +75,71 @@ kind delete cluster
 ---
 
 **References:**
-- [kind documentation](https://kind.sigs.k8s.io/)
-- [Kubernetes official docs](https://kubernetes.io/docs/)
+- [kind docs](https://kind.sigs.k8s.io/)
+- [kube docs](https://kubernetes.io/docs/)
+
+# Kubernetes: Create and inject a ConfigMap
+### Example configmap:
+create [configmap.yml](./test-configmap.yml)
+```yaml
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-configmap
+  namespace: default
+data:
+  app.properties: |
+    key1=value1
+    key2=value2
+  config.json: |
+    {
+      "settingA": "foo",
+      "settingB": "bar"
+    }
+```
+
+## Apply the configmap:
+```sh
+kubectl apply -f configmap.yml
+```
+
+optionally check it:
+```sh
+kubectl get configmap test-configmap -o yaml
+```
+
+## Use the ConfigMap in a Pod
+Mount as environment variables
+
+create file [mount-as-env.yml](./mount-as-env.yml)
+```yaml
+envFrom:
+    - configMapRef:
+            name: test-configmap
+```
+
+### Mount it as files
+
+create file [mount-as-files.yml](./mount-as-files.yml)
+```yaml
+volumes:
+    - name: config-volume
+        configMap:
+            name: test-configmap
+containers:
+    - name: your-container
+        volumeMounts:
+            - name: config-volume
+                mountPath: /etc/config
+```
+
+this will make the CM data available at ```/etc/config``` in the container.
+
+### Update the ConfigMap
+```sh
+kubectl apply -f configmap.yml
+```
+
+**references:**  
+- [kube configmaps](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/)

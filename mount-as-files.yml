@@ -1,0 +1,9 @@
+volumes:
+    - name: config-volume
+        configMap:
+            name: test-configmap
+containers:
+    - name: your-container
+        volumeMounts:
+            - name: config-volume
+                mountPath: /etc/config
